@@ -111,7 +111,7 @@ function ogm_civicrm_caseTypes(&$caseTypes) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
 function ogm_civicrm_angularModules(&$angularModules) {
-_ogm_civix_civicrm_angularModules($angularModules);
+  _ogm_civix_civicrm_angularModules($angularModules);
 }
 
 /**
@@ -124,16 +124,74 @@ function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 /**
- * Functions below this ship commented out. Uncomment as required.
- *
+ * Implements hook_civicrm_buildForm().
+ */
+function ogm_civicrm_buildForm($formName, &$form) {
 
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function ogm_civicrm_preProcess($formName, &$form) {
+  // custom hook: create or delete OGM session variables
+  watchdog('be.ctrl.ogm', 'hook buildform: ' . print_r($formName, TRUE));
+
+  /* Events */
+  if ($formName == 'CRM_Event_Form_Registration_Confirm') {
+    if (!$form->_flagSubmitted) {
+      // reset/unset session variable
+      unset($_SESSION["CTRL"]["events"]);
+    }
+    else {
+      // create ogm
+      $rand = rand(1, 999999);
+      $ogm = createOGM($rand, $form->_eventId);
+      $_SESSION["CTRL"]["events"]["ogm"] = '+++' . $ogm . '+++';
+    }
+  }
+
+  /* Membership */
+  if ($formName == 'CRM_Contribute_Form_Contribution_Confirm') {
+
+    dpm($_SESSION);
+    dpm($formName);
+    dpm($form);
+
+    if (!$form->_flagSubmitted) {
+      dpm("false");
+      // reset/unset session variable
+      unset($_SESSION["CTRL"]["membership"]);
+    }
+    else {
+
+      dpm("true");
+      // create ogm when step = Confirmation
+      $rand = rand(1, 999999);
+      $ogm = createOGM($rand, $form->_id);
+      dpm($ogm);
+      $_SESSION["CTRL"]["membership"]["ogm"] = '+++' . $ogm . '+++';
+    }
+  }
 
 }
 
-*/
+/**
+ * Implements hook_civicrm_alterMailParams().
+ */
+function ogm_civicrm_alterMailParams(&$params, $context) {
+  // custom hook: change tokens in "html" & "text" mailing formats.
+  watchdog('be.ctrl.ogm', 'hook alterMailParams: ' . print_r($params, TRUE));
+
+  /* Events */
+  if ($params['valueName'] == "membership_online_receipt") {
+    $text = $params['text'];
+    $params['text'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $text);
+    $html = $params['html'];
+    $params['html'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $html);
+  }
+
+  /* Membership */
+  if ($params['valueName'] == "event_online_receipt") {
+    $text = $params['text'];
+    $params['text'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["events"]["ogm"], $text);
+    $html = $params['html'];
+    $params['html'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["events"]["ogm"], $html);
+  }
+
+}
+
