@@ -129,15 +129,10 @@ function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 function ogm_civicrm_buildForm($formName, &$form) {
   // custom hook: create or delete OGM session variables
 
+  // reset session
+  //unset($_SESSION['CTRL']);
+
   /* Events */
-
-  if ($formName == 'CRM_Event_Form_Registration_Register') {
-    // Remove OGM from tokens when done = TRUE.
-    if (isset($_SESSION["CTRL"]["event"]["done"]) && $_SESSION["CTRL"]["event"]["done"]) {
-      unset($_SESSION["CTRL"]["event"]);
-    }
-  }
-
   if ($formName == 'CRM_Event_Form_Registration_Confirm') {
 
     // Create OGM if OGM doesn't exist.
@@ -145,25 +140,10 @@ function ogm_civicrm_buildForm($formName, &$form) {
       $rand = rand(1, 999999);
       $ogm = createOGM($rand, $form->_eventId);
       $_SESSION["CTRL"]["event"]["ogm"] = '+++' . $ogm . '+++';
-      $_SESSION["CTRL"]["event"]["done"] = FALSE;
     }
-
-    if ($form->_flagSubmitted) {
-      // Set done to true in session on thank you page.
-      $_SESSION["CTRL"]["event"]["done"] = TRUE;
-    }
-
   }
 
   /* Membership */
-
-  if ($formName == 'CRM_Contribute_Form_Contribution_Main') {
-    // Remove OGM from tokens when done = TRUE.
-    if (isset($_SESSION["CTRL"]["membership"]["done"]) && $_SESSION["CTRL"]["membership"]["done"]) {
-      unset($_SESSION["CTRL"]["membership"]);
-    }
-  }
-
   if ($formName == 'CRM_Contribute_Form_Contribution_Confirm') {
     // Create OGM if OGM doesn't exist.
     if (!isset($_SESSION["CTRL"]["membership"]["ogm"])) {
@@ -187,14 +167,11 @@ function ogm_civicrm_buildForm($formName, &$form) {
       $ogm = createOGM($cid, $form->_id);
       // Save to session.
       $_SESSION["CTRL"]["membership"]["ogm"] = '+++' . $ogm . '+++';
-      $_SESSION["CTRL"]["membership"]["done"] = FALSE;
     }
   }
 
-  if ($formName == 'CRM_Contribute_Form_Contribution_ThankYou') {
-    // Set done to true in session.
-    $_SESSION["CTRL"]["membership"]["done"] = TRUE;
-  }
+  // Log session.
+  dpm($_SESSION);
 
 }
 
@@ -202,12 +179,15 @@ function ogm_civicrm_buildForm($formName, &$form) {
  * Implements hook_civicrm_post().
  */
 function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+
   // log
   if ($objectName == "Contribution") {
     if ($op == "create") {
 
       /* Events */
-      if (isset($_SESSION["CTRL"]["events"]["ogm"])) {
+      watchdog('be.ctrl.ogm', 'ContributionCreate');
+
+      if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
         // Only change source when event session var is set.
         $result = civicrm_api3('Contribution', 'create', array(
           'sequential' => 1,
@@ -241,6 +221,12 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
     if ($tplName == "CRM/Event/Form/Registration/Confirm.tpl" || $tplName == "CRM/Event/Form/Registration/ThankYou.tpl") {
       // Find & Replace token
       $content = str_replace('[token_ogm]', $_SESSION["CTRL"]["event"]["ogm"], $content);
+      // Unset session
+      if ($tplName == "CRM/Event/Form/Registration/ThankYou.tpl") {
+        // Unset session.
+        watchdog('be.ctrl.ogm', "Unset Session Variable");
+        unset($_SESSION["CTRL"]["event"]);
+      }
     }
   }
 
@@ -249,6 +235,12 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
     if ($tplName == "CRM/Contribute/Form/Contribution/Confirm.tpl" || $tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
       // Find & Replace token
       $content = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $content);
+      // Unset session
+      if ($tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
+        // Unset session.
+        watchdog('be.ctrl.ogm', "Unset Session Variable");
+        unset($_SESSION["CTRL"]["membership"]);
+      }
     }
   }
 
