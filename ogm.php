@@ -127,14 +127,10 @@ function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  * Implements hook_civicrm_buildForm().
  */
 function ogm_civicrm_buildForm($formName, &$form) {
-  // custom hook: create or delete OGM session variables
-
-  // reset session
-  //unset($_SESSION['CTRL']);
+  // Custom hook: Create OGM as session variable.
 
   /* Events */
-  if ($formName == 'CRM_Event_Form_Registration_Confirm') {
-
+  if (strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE) {
     // Create OGM if OGM doesn't exist.
     if (!isset($_SESSION["CTRL"]["event"]["ogm"])) {
       $rand = rand(1, 999999);
@@ -143,8 +139,8 @@ function ogm_civicrm_buildForm($formName, &$form) {
     }
   }
 
-  /* Membership */
-  if ($formName == 'CRM_Contribute_Form_Contribution_Confirm') {
+  /* Memberships */
+  if (strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE) {
     // Create OGM if OGM doesn't exist.
     if (!isset($_SESSION["CTRL"]["membership"]["ogm"])) {
       $cid = 0;
@@ -170,8 +166,13 @@ function ogm_civicrm_buildForm($formName, &$form) {
     }
   }
 
-  // Log session.
-  dpm($_SESSION);
+  /* Log */
+  if (strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE || strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE) {
+    // Reset session.
+    // unset($_SESSION['CTRL']);
+    // Log session.
+    // dpm($_SESSION);
+  }
 
 }
 
@@ -179,14 +180,11 @@ function ogm_civicrm_buildForm($formName, &$form) {
  * Implements hook_civicrm_post().
  */
 function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-
-  // log
+  // Custom hook: Save OGM as source with the contribution.
   if ($objectName == "Contribution") {
     if ($op == "create") {
 
       /* Events */
-      watchdog('be.ctrl.ogm', 'ContributionCreate');
-
       if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
         // Only change source when event session var is set.
         $result = civicrm_api3('Contribution', 'create', array(
@@ -196,7 +194,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         ));
       }
 
-      /* Membership */
+      /* Memberships */
       if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
         // Only change source when membership session var is set.
         $result = civicrm_api3('Contribution', 'create', array(
@@ -214,10 +212,10 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  * Implements hook_civicrm_alterContent().
  */
 function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
-  // custom hook: change tokens in forms.
-
-  /* Events */
+  // Custom hook: change tokens in forms.
   if ($context == "form") {
+
+    /* Events */
     if ($tplName == "CRM/Event/Form/Registration/Confirm.tpl" || $tplName == "CRM/Event/Form/Registration/ThankYou.tpl") {
       // Find & Replace token
       $content = str_replace('[token_ogm]', $_SESSION["CTRL"]["event"]["ogm"], $content);
@@ -228,47 +226,47 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
         unset($_SESSION["CTRL"]["event"]);
       }
     }
-  }
 
-  /* Membership */
-  if ($context == "form") {
+    /* Memberships */
     if ($tplName == "CRM/Contribute/Form/Contribution/Confirm.tpl" || $tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
       // Find & Replace token
       $content = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $content);
       // Unset session
       if ($tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
         // Unset session.
-        watchdog('be.ctrl.ogm', "Unset Session Variable");
         unset($_SESSION["CTRL"]["membership"]);
       }
     }
   }
-
 }
 
 /**
  * Implements hook_civicrm_alterMailParams().
  */
 function ogm_civicrm_alterMailParams(&$params, $context) {
-  // custom hook: change tokens in "html" & "text" mailing formats.
+  // Custom hook: change tokens in "html" & "text" mailing formats.
 
   /* Events */
-  if ($params['valueName'] == "membership_online_receipt") {
-    $text = $params['text'];
-    $params['text'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $text);
-    $html = $params['html'];
-    $params['html'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $html);
-  }
-
-  /* Membership */
   if ($params['valueName'] == "event_online_receipt") {
     $text = $params['text'];
-    $params['text'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["event"]["ogm"], $text);
     $html = $params['html'];
-    $params['html'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["event"]["ogm"], $html);
+    if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
+      $params['text'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["event"]["ogm"], $text);
+      $params['html'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["event"]["ogm"], $html);
+    }
   }
 
-  /* Log */
-  watchdog('be.ctrl.ogm', 'hook alterMailParams: ' . print_r($params, TRUE));
+  /* Memberships */
+  if ($params['valueName'] == "membership_online_receipt") {
+    $text = $params['text'];
+    $html = $params['html'];
+    if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
+      $params['text'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $text);
+      $params['html'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $html);
+    }
+  }
+
+  /* Log e-mail content */
+  // watchdog('be.ctrl.ogm', 'hook alterMailParams: ' . print_r($params, TRUE));
 }
 
