@@ -134,7 +134,7 @@ function ogm_civicrm_buildForm($formName, &$form) {
     // Create OGM if OGM doesn't exist.
     if (!isset($_SESSION["CTRL"]["event"]["ogm"])) {
       $rand = rand(1, 999999);
-      $ogm = createOGM($rand, $form->_eventId);
+      $ogm = ogm_civicrm_createOGM($rand, $form->_eventId);
       $_SESSION["CTRL"]["event"]["ogm"] = '+++' . $ogm . '+++';
     }
   }
@@ -160,7 +160,7 @@ function ogm_civicrm_buildForm($formName, &$form) {
         $cid = rand(1, 999999);
       }
       // Create OGM.
-      $ogm = createOGM($cid, $form->_id);
+      $ogm = ogm_civicrm_createOGM($cid, $form->_id);
       // Save to session.
       $_SESSION["CTRL"]["membership"]["ogm"] = '+++' . $ogm . '+++';
     }
