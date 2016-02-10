@@ -1,5 +1,5 @@
-Package: be.ctrl.ogm
-Copyright (C) 2015, kewljuice <kewljuice@hotmail.com>
+Package: be.ctrl
+Copyright (C) 2015, CTRL <no@ctrl.be>
 Licensed under the GNU Affero Public License 3.0 (below).
 
 -------------------------------------------------------------------------------
