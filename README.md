@@ -2,7 +2,7 @@
 
 OGM: Add "gestructureerde mededeling" for CiviCRM contributions
 - [Installation](#installation)
-- [Configuration](#configuration)
+- [Usage](#usage)
 
 ***
 
@@ -22,3 +22,18 @@ OGM: Add "gestructureerde mededeling" for CiviCRM contributions
 
 - The next step is enabling the extension which can be done from<br> 
 ```"Administer -> System Settings -> Manage CiviCRM Extensions".```
+
+## Usage
+
+- You can use following tokens with 'events':
+    - [token_ogm]
+    - [token_email]
+    - [token_date]
+    - [token_amount]
+
+- You can use following tokens with 'memberships':
+    - [token_ogm]
+    - [token_email]
+    - [token_date]
+    - [token_amount]
+    - [token_membership]
