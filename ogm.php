@@ -180,6 +180,40 @@ function ogm_civicrm_buildForm($formName, &$form) {
  * Implements hook_civicrm_post().
  */
 function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+
+  // Custom hook: Get Email from submission.
+  if ($objectName == "Email") {
+    if ($op == "edit") {
+      // Only fetch when event or membership session var is set.
+
+      /* Events */
+      if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
+        $result = civicrm_api3('Email', 'get', array(
+          'sequential' => 1,
+          'id' => $objectId
+        ));
+        // Set email in SESSION
+        if (!$result['is_error'] && $result['count'] > 0) {
+          $email = $result['values'][0]['email'];
+          $_SESSION["CTRL"]["event"]["email"] = $email;
+        }
+      }
+
+      /* Memberships */
+      if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
+        $result = civicrm_api3('Email', 'get', array(
+          'sequential' => 1,
+          'id' => $objectId
+        ));
+        // Set email in SESSION
+        if (!$result['is_error'] && $result['count'] > 0) {
+          $email = $result['values'][0]['email'];
+          $_SESSION["CTRL"]["membership"]["email"] = $email;
+        }
+      }
+    }
+  }
+
   // Custom hook: Save OGM as source with the contribution.
   if ($objectName == "Contribution") {
     if ($op == "create") {
@@ -192,6 +226,13 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
           'id' => $objectId,
           'source' => $_SESSION["CTRL"]["event"]["ogm"],
         ));
+        // Set total_amount & receive_date in SESSION
+        if (!$result['is_error'] && $result['count'] > 0) {
+          $total_amount = $result['values'][0]['total_amount'];
+          $receive_date = $result['values'][0]['receive_date'];
+          $_SESSION["CTRL"]["event"]["total_amount"] = $total_amount;
+          $_SESSION["CTRL"]["event"]["receive_date"] = $receive_date;
+        }
       }
 
       /* Memberships */
@@ -202,16 +243,43 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
           'id' => $objectId,
           'source' => $_SESSION["CTRL"]["membership"]["ogm"],
         ));
+        // Set total_amount & receive_date in SESSION
+        if (!$result['is_error'] && $result['count'] > 0) {
+          $total_amount = $result['values'][0]['total_amount'];
+          $receive_date = $result['values'][0]['receive_date'];
+          $_SESSION["CTRL"]["membership"]["total_amount"] = $total_amount;
+          $_SESSION["CTRL"]["membership"]["receive_date"] = $receive_date;
+        }
       }
 
     }
   }
+
+  // Custom hook: Get Email from submission.
+  if ($objectName == "Membership") {
+    if ($op == "create") {
+      // Only fetch when membership session var is set.
+      if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
+        $result = civicrm_api3('Membership', 'get', array(
+          'sequential' => 1,
+          'id' => $objectId
+        ));
+        // Set membership_name in SESSION
+        if (!$result['is_error'] && $result['count'] > 0) {
+          $membership_name = $result['values'][0]['membership_name'];
+          $_SESSION["CTRL"]["membership"]["membership_name"] = $membership_name;
+        }
+      }
+    }
+  }
+
 }
 
 /**
  * Implements hook_civicrm_alterContent().
  */
 function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
+
   // Custom hook: change tokens in forms.
   if ($context == "form") {
 
@@ -219,10 +287,13 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
     if ($tplName == "CRM/Event/Form/Registration/Confirm.tpl" || $tplName == "CRM/Event/Form/Registration/ThankYou.tpl") {
       // Find & Replace token
       $content = str_replace('[token_ogm]', $_SESSION["CTRL"]["event"]["ogm"], $content);
+      $content = str_replace('[token_email]', $_SESSION["CTRL"]["event"]["email"], $content);
+      $content = str_replace('[token_amount]', $_SESSION["CTRL"]["event"]["total_amount"], $content);
+      $content = str_replace('[token_date]', $_SESSION["CTRL"]["event"]["receive_date"], $content);
+
       // Unset session
       if ($tplName == "CRM/Event/Form/Registration/ThankYou.tpl") {
         // Unset session.
-        watchdog('be.ctrl.ogm', "Unset Session Variable");
         unset($_SESSION["CTRL"]["event"]);
       }
     }
@@ -231,6 +302,11 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
     if ($tplName == "CRM/Contribute/Form/Contribution/Confirm.tpl" || $tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
       // Find & Replace token
       $content = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $content);
+      $content = str_replace('[token_email]', $_SESSION["CTRL"]["membership"]["email"], $content);
+      $content = str_replace('[token_amount]', $_SESSION["CTRL"]["membership"]["total_amount"], $content);
+      $content = str_replace('[token_date]', $_SESSION["CTRL"]["membership"]["receive_date"], $content);
+      $content = str_replace('[token_membership]', $_SESSION["CTRL"]["membership"]["membership_name"], $content);
+
       // Unset session
       if ($tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
         // Unset session.
@@ -244,6 +320,7 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
  * Implements hook_civicrm_alterMailParams().
  */
 function ogm_civicrm_alterMailParams(&$params, $context) {
+
   // Custom hook: change tokens in "html" & "text" mailing formats.
 
   /* Events */
@@ -251,8 +328,16 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
     $text = $params['text'];
     $html = $params['html'];
     if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
+      // Plain text email.
       $params['text'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["event"]["ogm"], $text);
+      $params['text'] = str_replace('[token_email]', $_SESSION["CTRL"]["event"]["email"], $text);
+      $params['text'] = str_replace('[token_amount]', $_SESSION["CTRL"]["event"]["total_amount"], $text);
+      $params['text'] = str_replace('[token_date]', $_SESSION["CTRL"]["event"]["receive_date"], $text);
+      // HTML text email.
       $params['html'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["event"]["ogm"], $html);
+      $params['html'] = str_replace('[token_email]', $_SESSION["CTRL"]["event"]["email"], $text);
+      $params['html'] = str_replace('[token_amount]', $_SESSION["CTRL"]["event"]["total_amount"], $text);
+      $params['html'] = str_replace('[token_date]', $_SESSION["CTRL"]["event"]["receive_date"], $text);
     }
   }
 
@@ -261,12 +346,20 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
     $text = $params['text'];
     $html = $params['html'];
     if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
+      // Plain text email.
       $params['text'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $text);
+      $params['text'] = str_replace('[token_email]', $_SESSION["CTRL"]["membership"]["email"], $text);
+      $params['text'] = str_replace('[token_amount]', $_SESSION["CTRL"]["membership"]["total_amount"], $text);
+      $params['text'] = str_replace('[token_date]', $_SESSION["CTRL"]["membership"]["receive_date"], $text);
+      $params['text'] = str_replace('[token_membership]', $_SESSION["CTRL"]["membership"]["membership_name"], $text);
+      // HTML text email.
       $params['html'] = str_replace('[token_ogm]', $_SESSION["CTRL"]["membership"]["ogm"], $html);
+      $params['html'] = str_replace('[token_email]', $_SESSION["CTRL"]["membership"]["email"], $text);
+      $params['html'] = str_replace('[token_amount]', $_SESSION["CTRL"]["membership"]["total_amount"], $text);
+      $params['html'] = str_replace('[token_date]', $_SESSION["CTRL"]["membership"]["receive_date"], $text);
+      $params['html'] = str_replace('[token_membership]', $_SESSION["CTRL"]["membership"]["membership_name"], $text);
     }
   }
 
-  /* Log e-mail content */
-  // watchdog('be.ctrl.ogm', 'hook alterMailParams: ' . print_r($params, TRUE));
 }
 
