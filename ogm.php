@@ -196,10 +196,12 @@ function ogm_civicrm_buildForm($formName, &$form)
  */
 function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
 {
+  /*
   watchdog('ogm_civicrm', $objectName);
   watchdog('ogm_civicrm', $op);
   watchdog('ogm_civicrm', $objectId);
-
+  */
+  
   // Custom hook: Get Email from submission.
   if ($objectName == "Email") {
     if ($op == "edit") {
@@ -260,7 +262,6 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
           'id' => $objectId,
           'source' => $_SESSION["CTRL"]["membership"]["ogm"],
         ));
-        watchdog("ogm_civicrm_contribution", print_r($result,true));
 
         // Set total_amount & receive_date in SESSION
         if (!$result['is_error'] && $result['count'] > 0) {
@@ -286,8 +287,8 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
           $membership_name = $result['values'][0]['membership_name'];
           $_SESSION["CTRL"]["membership"]["membership_name"] = $membership_name;
         }
-        // Log
-        watchdog('ogm_civicrm', 'Membership');
+        // TODO: check with renewal, if this hook is called!
+        // watchdog('ogm_civicrm', 'Membership');
       }
     }
   }
