@@ -196,12 +196,7 @@ function ogm_civicrm_buildForm($formName, &$form)
  */
 function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
 {
-  /*
-  watchdog('ogm_civicrm', $objectName);
-  watchdog('ogm_civicrm', $op);
-  watchdog('ogm_civicrm', $objectId);
-  */
-  
+
   // Custom hook: Get Email from submission.
   if ($objectName == "Email") {
     if ($op == "edit") {
@@ -213,7 +208,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
           'sequential' => 1,
           'id' => $objectId
         ));
-        // Set email in SESSION
+        // Set email in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
           $email = $result['values'][0]['email'];
           $_SESSION["CTRL"]["event"]["email"] = $email;
@@ -226,7 +221,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
           'sequential' => 1,
           'id' => $objectId
         ));
-        // Set email in SESSION
+        // Set email in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
           $email = $result['values'][0]['email'];
           $_SESSION["CTRL"]["membership"]["email"] = $email;
@@ -247,7 +242,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
           'id' => $objectId,
           'source' => $_SESSION["CTRL"]["event"]["ogm"],
         ));
-        // Set total_amount & receive_date in SESSION
+        // Set total_amount & receive_date in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
           $_SESSION["CTRL"]["event"]["total_amount"] = $result['values'][0]['total_amount'];
           $_SESSION["CTRL"]["event"]["receive_date"] = $result['values'][0]['receive_date'];
@@ -262,8 +257,9 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
           'id' => $objectId,
           'source' => $_SESSION["CTRL"]["membership"]["ogm"],
         ));
-
-        // Set total_amount & receive_date in SESSION
+        // Log
+        watchdog("ogm_civicrm contrib", print_r($result, true));
+        // Set total_amount & receive_date in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
           $_SESSION["CTRL"]["membership"]["total_amount"] = $result['values'][0]['total_amount'];
           $_SESSION["CTRL"]["membership"]["receive_date"] = $result['values'][0]['receive_date'];
@@ -272,23 +268,33 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
     }
   }
 
-  // Custom hook: Get Membership name from submission.
-  if ($objectName == "Membership") {
+  /*
+   * A new membership works with the hook "membership" a renewal doesn't.
+   * Changed "membership post" to "membershipPayment post" to solve this.
+   */
 
+  // Custom hook: Get MembershipPayment name from submission.
+  if ($objectName == "MembershipPayment") {
     if ($op == "create") {
       // Only fetch when membership session var is set.
       if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
-        $result = civicrm_api3('Membership', 'get', array(
+        $result = civicrm_api3('MembershipPayment', 'get', array(
           'sequential' => 1,
           'id' => $objectId
         ));
-        // Set membership_name in SESSION
+        // Set membership_name in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
-          $membership_name = $result['values'][0]['membership_name'];
-          $_SESSION["CTRL"]["membership"]["membership_name"] = $membership_name;
+          // Fetch membership name.
+          $membership_id = $result['values'][0]['membership_id'];
+          $membership = civicrm_api3('Membership', 'get', array(
+            'sequential' => 1,
+            'id' => $membership_id
+          ));
+          if (!$membership['is_error'] && $membership['count'] > 0) {
+            $membership_name = $membership['values'][0]['membership_name'];
+            $_SESSION["CTRL"]["membership"]["membership_name"] = $membership_name;
+          }
         }
-        // TODO: check with renewal, if this hook is called!
-        // watchdog('ogm_civicrm', 'Membership');
       }
     }
   }
@@ -316,9 +322,9 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object)
 
     /* Memberships */
     if ($tplName == "CRM/Contribute/Form/Contribution/Confirm.tpl" || $tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
-      // Find & Replace token
+      // Find & Replace token.
       $content = ogm_civicrm_replaceTokens($content, "membership");
-      // Unset session
+      // Unset session.
       if ($tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
         // Unset session.
         unset($_SESSION["CTRL"]["membership"]);
