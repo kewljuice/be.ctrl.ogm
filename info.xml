@@ -2,7 +2,7 @@
 <extension key="be.ctrl.ogm" type="module">
     <file>ogm</file>
     <name>CiviCRM ogm extension</name>
-    <description>OGM: Add "gestructureerde mededeling" for CiviCRM contributions</description>
+    <description>OGM: Adds tokens for CiviCRM contribution and event pages</description>
     <license>AGPL-3.0</license>
     <maintainer>
         <author>Hechtermans Wouter</author>
@@ -16,11 +16,13 @@
     </urls>
     <releaseDate>2016-02-02</releaseDate>
     <version>1.0</version>
-    <develStage>alpha</develStage>
+    <develStage>stable</develStage>
     <compatibility>
         <ver>4.4</ver>
+        <ver>4.5</ver>
+        <ver>4.6</ver>
     </compatibility>
-    <comments>This is a new, undeveloped module</comments>
+    <comments>Once installed tokens will be available on contribution and event pages.</comments>
     <civix>
         <namespace>CRM/ctrl/ogm</namespace>
     </civix>
