@@ -1,7 +1,7 @@
 <?php
 
 require_once 'ogm.civix.php';
-require_once 'php/functions.php';
+require_once 'php/ogm_functions.php';
 
 /**
  * Implements hook_civicrm_config().
