@@ -140,14 +140,15 @@ function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL)
 function ogm_civicrm_buildForm($formName, &$form)
 {
 
-  // Log
-  // dpm($_SESSION['CTRL']);
-  // unset($_SESSION['CTRL']);
-
   // Custom hook: Create OGM as session variable.
 
   /* Events */
   if (strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE) {
+    // Reset Session if payment is failed.
+    if ($_REQUEST["cc"] == 'fail') {
+      // Unset session.
+      unset($_SESSION["CTRL"]["event"]);
+    }
     // Create OGM if OGM doesn't exist.
     if (!isset($_SESSION["CTRL"]["event"]["ogm"])) {
       $rand = rand(1, 999999);
@@ -181,14 +182,16 @@ function ogm_civicrm_buildForm($formName, &$form)
     }
   }
 
-  /* Log */
+  /* Log
   if (strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE || strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE) {
     // Reset session.
     // unset($_SESSION['CTRL']);
-    // Log session.
+    // Log variables.
+    // dpm($formName);
+    // dpm($_REQUEST);
     // dpm($_SESSION);
   }
-
+  */
 }
 
 /**
