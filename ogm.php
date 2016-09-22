@@ -245,6 +245,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
           'id' => $objectId,
           'source' => $_SESSION["CTRL"]["event"]["ogm"],
           'trxn_id' => $_SESSION["CTRL"]["event"]["ogm"],
+          'contribution_note' => $_SESSION["CTRL"]["event"]["ogm"],
         ));
         // Set total_amount & receive_date in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
@@ -261,6 +262,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
           'id' => $objectId,
           'source' => $_SESSION["CTRL"]["membership"]["ogm"],
           'trxn_id' => $_SESSION["CTRL"]["membership"]["ogm"],
+	      'contribution_note' => $_SESSION["CTRL"]["membership"]["ogm"],
         ));
         // Set total_amount & receive_date in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
