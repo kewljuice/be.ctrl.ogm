@@ -174,16 +174,6 @@ function ogm_civicrm_buildForm($formName, &$form) {
     }
   }
 
-  /* Log
-  if (strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE || strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE) {
-    // Reset session.
-    // unset($_SESSION['CTRL']);
-    // Log variables.
-    // dpm($formName);
-    // dpm($_REQUEST);
-    // dpm($_SESSION);
-  }
-  */
 }
 
 /**
@@ -204,6 +194,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
             'id' => $objectId,
           ]);
         } catch (Exception $e) {
+          dpm($e);
           Civi::log()->debug(__FUNCTION__);
         }
         // Set email in SESSION.
@@ -221,6 +212,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
             'id' => $objectId,
           ]);
         } catch (Exception $e) {
+          dpm($e);
           Civi::log()->debug(__FUNCTION__);
         }
         // Set email in SESSION.
@@ -248,6 +240,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
             'contribution_note' => $_SESSION["CTRL"]["event"]["ogm"],
           ]);
         } catch (Exception $e) {
+          dpm($e);
           Civi::log()->debug(__FUNCTION__);
         }
         // Set total_amount & receive_date in SESSION.
@@ -269,6 +262,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
             'contribution_note' => $_SESSION["CTRL"]["membership"]["ogm"],
           ]);
         } catch (Exception $e) {
+          dpm($e);
           Civi::log()->debug(__FUNCTION__);
         }
         // Set total_amount & receive_date in SESSION.
@@ -296,6 +290,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
             'id' => $objectId,
           ]);
         } catch (Exception $e) {
+          dpm($e);
           Civi::log()->debug(__FUNCTION__);
         }
         // Set membership_name in SESSION.
@@ -308,6 +303,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
               'id' => $membership_id,
             ]);
           } catch (Exception $e) {
+            dpm($e);
             Civi::log()->debug(__FUNCTION__);
           }
           if (!$membership['is_error'] && $membership['count'] > 0) {
@@ -386,5 +382,30 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
     }
   }
 
-}
+  /* CiviCRM Rules */
+  if (isset($params['groupName']) && $params['groupName'] == 'E-mail from API') {
+    // Event
+    if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
+      // Plain text email.
+      if(isset($params['text'])) {
+        $params['text'] = ogm_civicrm_replaceTokens($params['text'], "event");
+      }
+      // HTML text email.
+      if(isset($params['html'])) {
+        $params['html'] = ogm_civicrm_replaceTokens($params['html'], "event");
+      }
+    }
 
+    // Membership
+    if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
+      // Plain text email.
+      if (isset($params['text'])) {
+        $params['text'] = ogm_civicrm_replaceTokens($params['text'], "membership");
+      }
+      // HTML text email.
+      if (isset($params['html'])) {
+        $params['html'] = ogm_civicrm_replaceTokens($params['html'], "membership");
+      }
+    }
+  }
+}
