@@ -8,8 +8,7 @@ require_once 'php/ogm_functions.php';
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_config
  */
-function ogm_civicrm_config(&$config)
-{
+function ogm_civicrm_config(&$config) {
   _ogm_civix_civicrm_config($config);
 }
 
@@ -20,8 +19,7 @@ function ogm_civicrm_config(&$config)
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_xmlMenu
  */
-function ogm_civicrm_xmlMenu(&$files)
-{
+function ogm_civicrm_xmlMenu(&$files) {
   _ogm_civix_civicrm_xmlMenu($files);
 }
 
@@ -30,8 +28,7 @@ function ogm_civicrm_xmlMenu(&$files)
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
-function ogm_civicrm_install()
-{
+function ogm_civicrm_install() {
   _ogm_civix_civicrm_install();
 }
 
@@ -40,8 +37,7 @@ function ogm_civicrm_install()
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_uninstall
  */
-function ogm_civicrm_uninstall()
-{
+function ogm_civicrm_uninstall() {
   _ogm_civix_civicrm_uninstall();
 }
 
@@ -50,8 +46,7 @@ function ogm_civicrm_uninstall()
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_enable
  */
-function ogm_civicrm_enable()
-{
+function ogm_civicrm_enable() {
   _ogm_civix_civicrm_enable();
 }
 
@@ -60,25 +55,25 @@ function ogm_civicrm_enable()
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_disable
  */
-function ogm_civicrm_disable()
-{
+function ogm_civicrm_disable() {
   _ogm_civix_civicrm_disable();
 }
 
 /**
  * Implements hook_civicrm_upgrade().
  *
- * @param $op string, the type of operation being performed; 'check' or 'enqueue'
- * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ * @param $op string, the type of operation being performed; 'check' or
+ *   'enqueue'
+ * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of
+ *   pending up upgrade tasks
  *
  * @return mixed
- *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
- *                for 'enqueue', returns void
+ *   Based on op. for 'check', returns array(boolean) (TRUE if upgrades are
+ *   pending) for 'enqueue', returns void
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
-function ogm_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL)
-{
+function ogm_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
   return _ogm_civix_civicrm_upgrade($op, $queue);
 }
 
@@ -90,8 +85,7 @@ function ogm_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL)
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_managed
  */
-function ogm_civicrm_managed(&$entities)
-{
+function ogm_civicrm_managed(&$entities) {
   _ogm_civix_civicrm_managed($entities);
 }
 
@@ -104,8 +98,7 @@ function ogm_civicrm_managed(&$entities)
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
-function ogm_civicrm_caseTypes(&$caseTypes)
-{
+function ogm_civicrm_caseTypes(&$caseTypes) {
   _ogm_civix_civicrm_caseTypes($caseTypes);
 }
 
@@ -119,8 +112,7 @@ function ogm_civicrm_caseTypes(&$caseTypes)
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_caseTypes
  */
-function ogm_civicrm_angularModules(&$angularModules)
-{
+function ogm_civicrm_angularModules(&$angularModules) {
   _ogm_civix_civicrm_angularModules($angularModules);
 }
 
@@ -129,16 +121,14 @@ function ogm_civicrm_angularModules(&$angularModules)
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsFolders
  */
-function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL)
-{
+function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _ogm_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
 /**
  * Implements hook_civicrm_buildForm().
  */
-function ogm_civicrm_buildForm($formName, &$form)
-{
+function ogm_civicrm_buildForm($formName, &$form) {
 
   // Custom hook: Create OGM as session variable.
 
@@ -167,11 +157,13 @@ function ogm_civicrm_buildForm($formName, &$form)
         if ($form->_membershipContactID == 0) {
           // Logged in user use on behalf of id.
           $cid = $form->_params["select_contact_id"];
-        } else {
+        }
+        else {
           // Logged in user use CiviCRM id.
           $cid = $form->_membershipContactID;
         }
-      } else {
+      }
+      else {
         // Not logged in use random number.
         $cid = rand(1, 999999);
       }
@@ -197,8 +189,7 @@ function ogm_civicrm_buildForm($formName, &$form)
 /**
  * Implements hook_civicrm_post().
  */
-function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
-{
+function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 
   // Custom hook: Get Email from submission.
   if ($objectName == "Email") {
@@ -207,10 +198,14 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
 
       /* Events */
       if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
-        $result = civicrm_api3('Email', 'get', array(
-          'sequential' => 1,
-          'id' => $objectId
-        ));
+        try {
+          $result = civicrm_api3('Email', 'get', [
+            'sequential' => 1,
+            'id' => $objectId,
+          ]);
+        } catch (Exception $e) {
+          Civi::log()->debug(__FUNCTION__);
+        }
         // Set email in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
           $email = $result['values'][0]['email'];
@@ -220,10 +215,14 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
 
       /* Memberships */
       if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
-        $result = civicrm_api3('Email', 'get', array(
-          'sequential' => 1,
-          'id' => $objectId
-        ));
+        try {
+          $result = civicrm_api3('Email', 'get', [
+            'sequential' => 1,
+            'id' => $objectId,
+          ]);
+        } catch (Exception $e) {
+          Civi::log()->debug(__FUNCTION__);
+        }
         // Set email in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
           $email = $result['values'][0]['email'];
@@ -240,13 +239,17 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
       /* Events */
       if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
         // Only change source when event session var is set.
-        $result = civicrm_api3('Contribution', 'create', array(
-          'sequential' => 1,
-          'id' => $objectId,
-          'source' => $_SESSION["CTRL"]["event"]["ogm"],
-          'trxn_id' => $_SESSION["CTRL"]["event"]["ogm"],
-          'contribution_note' => $_SESSION["CTRL"]["event"]["ogm"],
-        ));
+        try {
+          $result = civicrm_api3('Contribution', 'create', [
+            'sequential' => 1,
+            'id' => $objectId,
+            'source' => $_SESSION["CTRL"]["event"]["ogm"],
+            'trxn_id' => $_SESSION["CTRL"]["event"]["ogm"],
+            'contribution_note' => $_SESSION["CTRL"]["event"]["ogm"],
+          ]);
+        } catch (Exception $e) {
+          Civi::log()->debug(__FUNCTION__);
+        }
         // Set total_amount & receive_date in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
           $_SESSION["CTRL"]["event"]["total_amount"] = $result['values'][0]['total_amount'];
@@ -257,13 +260,17 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
       /* Memberships */
       if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
         // Only change source when membership session var is set.
-        $result = civicrm_api3('Contribution', 'create', array(
-          'sequential' => 1,
-          'id' => $objectId,
-          'source' => $_SESSION["CTRL"]["membership"]["ogm"],
-          'trxn_id' => $_SESSION["CTRL"]["membership"]["ogm"],
-	      'contribution_note' => $_SESSION["CTRL"]["membership"]["ogm"],
-        ));
+        try {
+          $result = civicrm_api3('Contribution', 'create', [
+            'sequential' => 1,
+            'id' => $objectId,
+            'source' => $_SESSION["CTRL"]["membership"]["ogm"],
+            'trxn_id' => $_SESSION["CTRL"]["membership"]["ogm"],
+            'contribution_note' => $_SESSION["CTRL"]["membership"]["ogm"],
+          ]);
+        } catch (Exception $e) {
+          Civi::log()->debug(__FUNCTION__);
+        }
         // Set total_amount & receive_date in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
           $_SESSION["CTRL"]["membership"]["total_amount"] = $result['values'][0]['total_amount'];
@@ -283,18 +290,26 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
     if ($op == "create") {
       // Only fetch when membership session var is set.
       if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
-        $result = civicrm_api3('MembershipPayment', 'get', array(
-          'sequential' => 1,
-          'id' => $objectId
-        ));
+        try {
+          $result = civicrm_api3('MembershipPayment', 'get', [
+            'sequential' => 1,
+            'id' => $objectId,
+          ]);
+        } catch (Exception $e) {
+          Civi::log()->debug(__FUNCTION__);
+        }
         // Set membership_name in SESSION.
         if (!$result['is_error'] && $result['count'] > 0) {
           // Fetch membership name.
           $membership_id = $result['values'][0]['membership_id'];
-          $membership = civicrm_api3('Membership', 'get', array(
-            'sequential' => 1,
-            'id' => $membership_id
-          ));
+          try {
+            $membership = civicrm_api3('Membership', 'get', [
+              'sequential' => 1,
+              'id' => $membership_id,
+            ]);
+          } catch (Exception $e) {
+            Civi::log()->debug(__FUNCTION__);
+          }
           if (!$membership['is_error'] && $membership['count'] > 0) {
             $membership_name = $membership['values'][0]['membership_name'];
             $_SESSION["CTRL"]["membership"]["membership_name"] = $membership_name;
@@ -309,8 +324,7 @@ function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef)
 /**
  * Implements hook_civicrm_alterContent().
  */
-function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object)
-{
+function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
   // Custom hook: change tokens in forms.
   if ($context == "form") {
 
@@ -341,27 +355,34 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object)
 /**
  * Implements hook_civicrm_alterMailParams().
  */
-function ogm_civicrm_alterMailParams(&$params, $context)
-{
+function ogm_civicrm_alterMailParams(&$params, $context) {
   // Custom hook: change tokens in "html" & "text" mailing formats.
 
   /* Events */
-  if ($params['valueName'] == "event_online_receipt") {
+  if (isset($params['valueName']) && $params['valueName'] == "event_online_receipt") {
     if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
       // Plain text email.
-      $params['text'] = ogm_civicrm_replaceTokens($params['text'], "event");
+      if(isset($params['text'])) {
+        $params['text'] = ogm_civicrm_replaceTokens($params['text'], "event");
+      }
       // HTML text email.
-      $params['html'] = ogm_civicrm_replaceTokens($params['html'], "event");
+      if(isset($params['html'])) {
+        $params['html'] = ogm_civicrm_replaceTokens($params['html'], "event");
+      }
     }
   }
 
   /* Memberships */
-  if ($params['valueName'] == "membership_online_receipt") {
+  if (isset($params['valueName']) && $params['valueName'] == "membership_online_receipt") {
     if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
       // Plain text email.
-      $params['text'] = ogm_civicrm_replaceTokens($params['text'], "membership");
+      if (isset($params['text'])) {
+        $params['text'] = ogm_civicrm_replaceTokens($params['text'], "membership");
+      }
       // HTML text email.
-      $params['html'] = ogm_civicrm_replaceTokens($params['html'], "membership");
+      if (isset($params['html'])) {
+        $params['html'] = ogm_civicrm_replaceTokens($params['html'], "membership");
+      }
     }
   }
 

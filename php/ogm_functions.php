@@ -9,10 +9,10 @@
  *
  * @param integer $var1 cid or random
  * @param integer $var2 subject id
+ *
  * @return string
  */
-function ogm_civicrm_createOGM($var1, $var2)
-{
+function ogm_civicrm_createOGM($var1, $var2) {
   $ten = substr(1000000 + $var1, -4) . substr(100 + $var1 % 97, -2) . substr(100 + $var2 % 97, -2) . substr(100 + date("Ymdhis") % 97, -2);
   $check = substr(100 + $ten % 97, -2);
   if ($check == "00") {
@@ -28,16 +28,17 @@ function ogm_civicrm_createOGM($var1, $var2)
  *
  * @param string $var1 text with tokens
  * @param string $var2 context
+ *
  * @return string
  */
-function ogm_civicrm_replaceTokens($var1, $var2)
-{
-  $tokens = array(
+function ogm_civicrm_replaceTokens($var1, $var2) {
+  $tokens = [
     '[token_ogm]' => 'ogm',
     '[token_email]' => 'email',
     '[token_amount]' => 'total_amount',
     '[token_date]' => 'receive_date',
-    '[token_membership]' => 'membership_name');
+    '[token_membership]' => 'membership_name',
+  ];
 
   foreach ($tokens as $key => $value) {
     if (isset($_SESSION["CTRL"][$var2][$value])) {
