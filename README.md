@@ -25,8 +25,8 @@ OGM: Add "gestructureerde mededeling" for CiviCRM contributions
 
 ## Usage
 
-- You can use following tokens with 'events':
-    - [token_ogm]
-
-- You can use following tokens with 'memberships':
-    - [token_ogm]
+- You can use following tokens with 'events' & 'memberships':
+    - {ctrl.ogm}
+    - {ctrl.amount}
+    - {ctrl.type}
+    - {ctrl.subject}
