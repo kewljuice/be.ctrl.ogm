@@ -34,10 +34,6 @@ function ogm_civicrm_createOGM($var1, $var2) {
 function ogm_civicrm_replaceTokens($var1, $var2) {
   $tokens = [
     '[token_ogm]' => 'ogm',
-    '[token_email]' => 'email',
-    '[token_amount]' => 'total_amount',
-    '[token_date]' => 'receive_date',
-    '[token_membership]' => 'membership_name',
   ];
 
   foreach ($tokens as $key => $value) {

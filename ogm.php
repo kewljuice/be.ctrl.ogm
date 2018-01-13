@@ -149,7 +149,7 @@ function ogm_civicrm_buildForm($formName, &$form) {
 
   /* Memberships */
   if (strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE) {
-    // Create OGM if OGM doesn't exist.
+    // Create OGM if OGM doesn't exist for qfKey.
     if (!isset($_SESSION["CTRL"]["membership"]["ogm"])) {
       $cid = 0;
       // Determine Contact id.
@@ -173,145 +173,27 @@ function ogm_civicrm_buildForm($formName, &$form) {
       $_SESSION["CTRL"]["membership"]["ogm"] = '+++' . $ogm . '+++';
     }
   }
-
 }
 
 /**
- * Implements hook_civicrm_post().
+ * Implements hook_civicrm_pre().
  */
-function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-
-  // Custom hook: Get Email from submission.
-  if ($objectName == "Email") {
-    if ($op == "edit") {
-      // Only fetch when event or membership session var is set.
-
-      /* Events */
-      if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
-        try {
-          $result = civicrm_api3('Email', 'get', [
-            'sequential' => 1,
-            'id' => $objectId,
-          ]);
-        } catch (Exception $e) {
-          dpm($e);
-          Civi::log()->debug(__FUNCTION__);
-        }
-        // Set email in SESSION.
-        if (!$result['is_error'] && $result['count'] > 0) {
-          $email = $result['values'][0]['email'];
-          $_SESSION["CTRL"]["event"]["email"] = $email;
-        }
-      }
-
-      /* Memberships */
-      if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
-        try {
-          $result = civicrm_api3('Email', 'get', [
-            'sequential' => 1,
-            'id' => $objectId,
-          ]);
-        } catch (Exception $e) {
-          dpm($e);
-          Civi::log()->debug(__FUNCTION__);
-        }
-        // Set email in SESSION.
-        if (!$result['is_error'] && $result['count'] > 0) {
-          $email = $result['values'][0]['email'];
-          $_SESSION["CTRL"]["membership"]["email"] = $email;
-        }
-      }
-    }
-  }
+function ogm_civicrm_pre($op, $objectName, $id, &$params) {
 
   // Custom hook: Save OGM as source with the contribution.
   if ($objectName == "Contribution") {
     if ($op == "create") {
 
-      /* Events */
+      // Set OGM for Events.
       if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
-        // Only change source when event session var is set.
-        try {
-          $result = civicrm_api3('Contribution', 'create', [
-            'sequential' => 1,
-            'id' => $objectId,
-            'source' => $_SESSION["CTRL"]["event"]["ogm"],
-            'trxn_id' => $_SESSION["CTRL"]["event"]["ogm"],
-            'contribution_note' => $_SESSION["CTRL"]["event"]["ogm"],
-          ]);
-        } catch (Exception $e) {
-          dpm($e);
-          Civi::log()->debug(__FUNCTION__);
-        }
-        // Set total_amount & receive_date in SESSION.
-        if (!$result['is_error'] && $result['count'] > 0) {
-          $_SESSION["CTRL"]["event"]["total_amount"] = $result['values'][0]['total_amount'];
-          $_SESSION["CTRL"]["event"]["receive_date"] = $result['values'][0]['receive_date'];
-        }
+        $params['source'] = $_SESSION["CTRL"]["event"]["ogm"];
       }
 
-      /* Memberships */
-      if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
-        // Only change source when membership session var is set.
-        try {
-          $result = civicrm_api3('Contribution', 'create', [
-            'sequential' => 1,
-            'id' => $objectId,
-            'source' => $_SESSION["CTRL"]["membership"]["ogm"],
-            'trxn_id' => $_SESSION["CTRL"]["membership"]["ogm"],
-            'contribution_note' => $_SESSION["CTRL"]["membership"]["ogm"],
-          ]);
-        } catch (Exception $e) {
-          dpm($e);
-          Civi::log()->debug(__FUNCTION__);
-        }
-        // Set total_amount & receive_date in SESSION.
-        if (!$result['is_error'] && $result['count'] > 0) {
-          $_SESSION["CTRL"]["membership"]["total_amount"] = $result['values'][0]['total_amount'];
-          $_SESSION["CTRL"]["membership"]["receive_date"] = $result['values'][0]['receive_date'];
-        }
+      // Set OGM for New Memberships.
+      if (isset($_SESSION["CTRL"]["member"]["ogm"])) {
+        $params['source'] = $_SESSION["CTRL"]["membership"]["ogm"];
       }
-    }
-  }
 
-  /*
-   * A new membership works with the hook "membership" a renewal doesn't.
-   * Changed "membership post" to "membershipPayment post" to solve this.
-   */
-
-  // Custom hook: Get MembershipPayment name from submission.
-  if ($objectName == "MembershipPayment") {
-    if ($op == "create") {
-      // Only fetch when membership session var is set.
-      if (isset($_SESSION["CTRL"]["membership"]["ogm"])) {
-        try {
-          $result = civicrm_api3('MembershipPayment', 'get', [
-            'sequential' => 1,
-            'id' => $objectId,
-          ]);
-        } catch (Exception $e) {
-          dpm($e);
-          Civi::log()->debug(__FUNCTION__);
-        }
-        // Set membership_name in SESSION.
-        if (!$result['is_error'] && $result['count'] > 0) {
-          // Fetch membership name.
-          $membership_id = $result['values'][0]['membership_id'];
-          try {
-            $membership = civicrm_api3('Membership', 'get', [
-              'sequential' => 1,
-              'id' => $membership_id,
-            ]);
-          } catch (Exception $e) {
-            dpm($e);
-            Civi::log()->debug(__FUNCTION__);
-          }
-          if (!$membership['is_error'] && $membership['count'] > 0) {
-            $membership_name = $membership['values'][0]['membership_name'];
-            $_SESSION["CTRL"]["membership"]["membership_name"] = $membership_name;
-          }
-        }
-      }
     }
   }
 
@@ -358,11 +240,11 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
   if (isset($params['valueName']) && $params['valueName'] == "event_online_receipt") {
     if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
       // Plain text email.
-      if(isset($params['text'])) {
+      if (isset($params['text'])) {
         $params['text'] = ogm_civicrm_replaceTokens($params['text'], "event");
       }
       // HTML text email.
-      if(isset($params['html'])) {
+      if (isset($params['html'])) {
         $params['html'] = ogm_civicrm_replaceTokens($params['html'], "event");
       }
     }
@@ -387,11 +269,11 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
     // Event
     if (isset($_SESSION["CTRL"]["event"]["ogm"])) {
       // Plain text email.
-      if(isset($params['text'])) {
+      if (isset($params['text'])) {
         $params['text'] = ogm_civicrm_replaceTokens($params['text'], "event");
       }
       // HTML text email.
-      if(isset($params['html'])) {
+      if (isset($params['html'])) {
         $params['html'] = ogm_civicrm_replaceTokens($params['html'], "event");
       }
     }
@@ -408,4 +290,5 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
       }
     }
   }
+
 }
