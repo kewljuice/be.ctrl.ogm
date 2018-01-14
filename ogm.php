@@ -144,11 +144,12 @@ function ogm_civicrm_buildForm($formName, &$form) {
 
   /*
   // Development purpose.
-  unset($_SESSION['CTRL']);
+  // unset($_SESSION['CTRL']);
   if (strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE || strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE) {
     dpm($_SESSION['CTRL']);
   }
   */
+
 }
 
 /**
@@ -160,6 +161,7 @@ function ogm_civicrm_buildForm($formName, &$form) {
  * @param $params
  */
 function ogm_civicrm_pre($op, $objectName, $id, &$params) {
+
   // Custom hook: Save OGM as source with the contribution.
   if ($objectName == "Contribution") {
     if ($op == "create") {
@@ -180,64 +182,36 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
 
       // TODO: Check for event id!? (url param?)
 
-      // If subject_id is set create OGM.
+      // If subject_id is set create OGM & Session.
       if (isset($subject_id)) {
         // Generate OGM code.
         $ogm = ogm_civicrm_createOGM($contact_id, $subject_id);
+
         // Add OGM code to contribution
         $params['source'] = $ogm;
         $params['trxn_id'] = $ogm;
-      }
-    }
-  }
-}
 
-/**
- * Implements hook_civicrm_post().
- *
- * @param $op
- * @param $objectName
- * @param $objectId
- * @param $objectRef
- */
-function ogm_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-
-  // Create session parameters for Contribution.
-  if ($objectName == "Contribution") {
-    if ($op == "create") {
-      if (isset($objectRef->trxn_id)) {
-        // On 'civicrm_post' add parameters to Session.
+        // Fetch qfKey.
         $qfKey = $_REQUEST['qfKey'];
-        $_SESSION['CTRL'][$qfKey]['ctrl_id'] = $objectRef->id;
-        $_SESSION['CTRL'][$qfKey]['ctrl_ogm'] = $objectRef->trxn_id;
-        $_SESSION['CTRL'][$qfKey]['ctrl_amount'] = $objectRef->total_amount;
-        // Based on financial_type_id.
-        if ($objectRef->financial_type_id == 2) {
-          // Set membership subject.
-          $_SESSION['CTRL'][$qfKey]['ctrl_type'] = 'Membership';
-        }
-        if ($objectRef->financial_type_id == 4) {
-          // Set event subject.
-          $_SESSION['CTRL'][$qfKey]['ctrl_type'] = 'Event';
-        }
-      }
-    }
-  }
 
-  // Create session parameters for MembershipPayment.
-  if ($objectName == "MembershipPayment") {
-    if ($op == "create") {
-      $qfKey = $_REQUEST['qfKey'];
-      // When contribution_id exist in session, add subject to session.
-      if ($objectRef->contribution_id == $_SESSION['CTRL'][$qfKey]['ctrl_id']) {
-        // Set membership subject.
-        $_SESSION['CTRL'][$qfKey]['ctrl_subject'] = ogm_civicrm_membership_subject($objectId);
+        // Create Session variables.
+        $_SESSION['CTRL'][$qfKey]['contribution_ogm'] = $ogm;
+        $_SESSION['CTRL'][$qfKey]['contribution_amount'] = CRM_Utils_Money::format($params['total_amount'], $params['currency']);
+
+        // Based on financial_type_id.
+        if ($params['financial_type_id'] == 2) {
+          // Set membership subject.
+          $_SESSION['CTRL'][$qfKey]['contribution_type'] = ts('Membership');
+        }
+        if ($params['financial_type_id'] == 4) {
+          // Set event subject.
+          $_SESSION['CTRL'][$qfKey]['contribution_type'] = ts('Event');
+        }
       }
     }
   }
 
 }
-
 
 /**
  * Implements hook_civicrm_alterContent().
@@ -297,7 +271,6 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
   /* CiviCRM Rules */
   if (isset($params['groupName']) && isset($_REQUEST['qfKey'])) {
     if ($params['groupName'] == 'E-mail from API') {
-
       // Plain text email.
       if (isset($params['text'])) {
         $params['text'] = ogm_civicrm_replaceTokens($params['text'], $_REQUEST['qfKey']);

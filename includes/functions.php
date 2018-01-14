@@ -28,12 +28,10 @@ function ogm_civicrm_createOGM($var1, $var2) {
  */
 function ogm_civicrm_replaceTokens($content, $qfKey) {
   $tokens = [
-    '{ctrl.ogm}' => 'ctrl_ogm',
-    '{ctrl.amount}' => 'ctrl_amount',
-    '{ctrl.type}' => 'ctrl_type',
-    '{ctrl.subject}' => 'ctrl_subject',
+    '[contribution.ogm]' => 'contribution_ogm',
+    '[contribution.amount]' => 'contribution_amount',
+    '[contribution.type]' => 'contribution_type',
   ];
-
   foreach ($tokens as $key => $value) {
     if (isset($_SESSION["CTRL"][$qfKey][$value])) {
       $content = str_replace($key, $_SESSION["CTRL"][$qfKey][$value], $content);
@@ -43,43 +41,4 @@ function ogm_civicrm_replaceTokens($content, $qfKey) {
     }
   }
   return $content;
-}
-
-/**
- * Fetches membership subject.
- *
- * @param integer
- *
- * @return string
- */
-function ogm_civicrm_membership_subject($id) {
-  // Set default to NULL.
-  $membership_name = NULL;
-  try{
-    // Fetch membership_id by MembershipPayment API call.
-    $result = civicrm_api3('MembershipPayment', 'get', [
-      'sequential' => 1,
-      'id' => $id,
-    ]);
-  } catch (Exception $e) {
-    // log exception.
-  }
-  // With results continue.
-  if (!$result['is_error'] && $result['count'] > 0) {
-    $membership_id = $result['values'][0]['membership_id'];
-    try {
-      // Fetch membership_name by Membership API call.
-      $membership = civicrm_api3('Membership', 'get', [
-        'sequential' => 1,
-        'id' => $membership_id,
-      ]);
-    } catch (Exception $e) {
-      // log exception.
-    }
-    if (!$membership['is_error'] && $membership['count'] > 0) {
-      $membership_name = $membership['values'][0]['membership_name'];
-    }
-  }
-  // Return membership_name.
-  return $membership_name;
 }
