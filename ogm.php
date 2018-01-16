@@ -166,8 +166,6 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
   if ($objectName == "Contribution") {
     if ($op == "create") {
 
-      // TODO: Check for 'pending' contributions only?
-
       // Fetch 'contact_id' parameter.
       if (isset($params['contact_id'])) {
         $contact_id = $params['contact_id'];
@@ -175,15 +173,27 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
       else {
         $contact_id = rand(1, 999999);
       }
-      // Fetch 'subject' id for contribution page.
+
+      // Fetch 'subject' id from contribution page id.
       if (isset($params['contribution_page_id'])) {
         $subject_id = $params['contribution_page_id'];
       }
 
-      // TODO: Check for event id!? (url param?)
+      // Fetch 'event' id from request 'entryURL'
+      if (isset($params['financial_type_id']) && $params['financial_type_id'] == 4) {
+        $url = parse_url(htmlspecialchars_decode($_REQUEST['entryURL']));
+        parse_str($url['query'], $query);
+        if (isset($query['id'])) {
+          $subject_id = $query['id'];
+        }
+        else {
+          $subject_id = 0;
+        }
+      }
 
+      // Check for 'subject_id' & contributions only?
       // If subject_id is set create OGM & Session.
-      if (isset($subject_id)) {
+      if (isset($subject_id) && $params['is_pay_later']) {
         // Generate OGM code.
         $ogm = ogm_civicrm_createOGM($contact_id, $subject_id);
 
