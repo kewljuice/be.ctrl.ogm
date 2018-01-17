@@ -33,8 +33,8 @@ function ogm_civicrm_replaceTokens($content, $qfKey) {
     '[contribution.type]' => 'contribution_type',
   ];
   foreach ($tokens as $key => $value) {
-    if (isset($_SESSION["CTRL"][$qfKey][$value])) {
-      $content = str_replace($key, $_SESSION["CTRL"][$qfKey][$value], $content);
+    if (isset($_SESSION["ctrl"][$qfKey][$value])) {
+      $content = str_replace($key, $_SESSION["ctrl"][$qfKey][$value], $content);
     }
     else {
       $content = str_replace($key, "", $content);

@@ -132,15 +132,13 @@ function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  * @param $form
  */
 function ogm_civicrm_buildForm($formName, &$form) {
-
   /*
-  // Development purpose.
-  // unset($_SESSION['CTRL']);
-  if (strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE || strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE) {
-    dpm($_SESSION['CTRL']);
-  }
+    // Development purpose.
+    // unset($_SESSION['ctrl']);
+    if (strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE || strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE) {
+      dpm($_SESSION);
+    }
   */
-
 }
 
 /**
@@ -157,57 +155,71 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
   if ($objectName == "Contribution") {
     if ($op == "create") {
 
-      // Fetch 'contact_id' parameter.
-      if (isset($params['contact_id'])) {
-        $contact_id = $params['contact_id'];
-      }
-      else {
-        $contact_id = rand(1, 999999);
-      }
+      // Alter 'is_pay_later' contributions.
+      if ($params['is_pay_later']) {
 
-      // Fetch 'subject' id from contribution page id.
-      if (isset($params['contribution_page_id'])) {
-        $subject_id = $params['contribution_page_id'];
-      }
+        // Alter all 'membership' payments.
+        if (isset($params['financial_type_id']) && $params['financial_type_id'] == 2) {
+          // Set contribution type.
+          $contribution_type = ts('Membership');
 
-      // Fetch 'event' id from request 'entryURL'
-      if (isset($params['financial_type_id']) && $params['financial_type_id'] == 4) {
-        $url = parse_url(htmlspecialchars_decode($_REQUEST['entryURL']));
-        parse_str($url['query'], $query);
-        if (isset($query['id'])) {
-          $subject_id = $query['id'];
+          // Fetch 'contribution page' id from parameters.
+          if (isset($params['contribution_page_id'])) {
+            // Set subject_id if contribution page is known.
+            $subject_id = $params['contribution_page_id'];
+          }
+
+          // Fetch 'membership' id from parameters.
+          if(isset($params['membership_id'])) {
+            // Set subject_id if membership id is known.
+            $subject_id = $params['membership_id'];
+          }
+
         }
-        else {
-          $subject_id = 0;
+
+        // Alter all 'event' payments.
+        if (isset($params['financial_type_id']) && $params['financial_type_id'] == 4) {
+          // Set contribution type.
+          $contribution_type = ts('Event');
+
+          // Fetch 'event' id from 'entryURL'.
+          $url = parse_url(htmlspecialchars_decode($_REQUEST['entryURL']));
+          parse_str($url['query'], $event);
+          if (isset($query['id'])) {
+            // Set subject_id if event id is known.
+            $subject_id = $event['id'];
+          }
         }
-      }
 
-      // Check for 'subject_id' & contributions only?
-      // If subject_id is set create OGM & Session.
-      if (isset($subject_id) && $params['is_pay_later']) {
-        // Generate OGM code.
-        $ogm = ogm_civicrm_createOGM($contact_id, $subject_id);
+        // Check for 'subject_id' & 'is_pay_later' contributions only?
+        // If subject_id is set create OGM & Session.
+        if (isset($subject_id)) {
 
-        // Add OGM code to contribution
-        $params['source'] = $ogm;
-        $params['trxn_id'] = $ogm;
+          // Fetch 'contact_id' parameter.
+          if (isset($params['contact_id'])) {
+            $contact_id = $params['contact_id'];
+          }
+          else {
+            $contact_id = rand(1, 999999);
+          }
 
-        // Fetch qfKey.
-        $qfKey = $_REQUEST['qfKey'];
+          // Generate OGM code.
+          $ogm = ogm_civicrm_createOGM($contact_id, $subject_id);
 
-        // Create Session variables.
-        $_SESSION['CTRL'][$qfKey]['contribution_ogm'] = $ogm;
-        $_SESSION['CTRL'][$qfKey]['contribution_amount'] = CRM_Utils_Money::format($params['total_amount'], $params['currency']);
+          // Add OGM code to contribution
+          $params['source'] = $ogm;
+          $params['trxn_id'] = $ogm;
 
-        // Based on financial_type_id.
-        if ($params['financial_type_id'] == 2) {
-          // Set membership subject.
-          $_SESSION['CTRL'][$qfKey]['contribution_type'] = ts('Membership');
+          // Fetch qfKey.
+          $qfKey = $_REQUEST['qfKey'];
+
+          // Create Session variables.
+          $_SESSION['ctrl'][$qfKey]['contribution_ogm'] = $ogm;
+          $_SESSION['ctrl'][$qfKey]['contribution_amount'] = CRM_Utils_Money::format($params['total_amount'], $params['currency']);
+          $_SESSION['ctrl'][$qfKey]['contribution_type'] = $contribution_type;
+
         }
-        if ($params['financial_type_id'] == 4) {
-          // Set event subject.
-          $_SESSION['CTRL'][$qfKey]['contribution_type'] = ts('Event');
-        }
+
       }
     }
   }
@@ -240,7 +252,7 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
     if ($tplName == "CRM/Event/Form/Registration/ThankYou.tpl" || $tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
       // Fetch qfKey.
       $qfKey = $_REQUEST['qfKey'];
-      unset($_SESSION['CTRL'][$qfKey]);
+      unset($_SESSION['ctrl'][$qfKey]);
     }
   }
 }
