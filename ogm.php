@@ -134,15 +134,6 @@ function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 function ogm_civicrm_buildForm($formName, &$form) {
 
   /*
-  // TODO: Clear OGM session for failed payments, needed qfKey & cc failed?
-  if ($_REQUEST["cc"] == 'fail') {
-    // Unset session.
-    $qfKey = $_REQUEST['qfKey'];
-    unset($_SESSION["CTRL"][qfKey]);
-  }
-  */
-
-  /*
   // Development purpose.
   // unset($_SESSION['CTRL']);
   if (strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE || strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE) {
