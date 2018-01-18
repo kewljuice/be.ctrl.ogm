@@ -133,11 +133,11 @@ function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  */
 function ogm_civicrm_buildForm($formName, &$form) {
   /*
-    // Development purpose.
-    // unset($_SESSION['ctrl']);
-    if (strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE || strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE) {
-      dpm($_SESSION);
-    }
+  // Development purpose.
+  // unset($_SESSION['ctrl']);
+  if (strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE || strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE) {
+    dpm($_SESSION);
+  }
   */
 }
 
@@ -170,11 +170,10 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
           }
 
           // Fetch 'membership' id from parameters.
-          if(isset($params['membership_id'])) {
+          if (isset($params['membership_id'])) {
             // Set subject_id if membership id is known.
             $subject_id = $params['membership_id'];
           }
-
         }
 
         // Alter all 'event' payments.
@@ -185,10 +184,17 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
           // Fetch 'event' id from 'entryURL'.
           $url = parse_url(htmlspecialchars_decode($_REQUEST['entryURL']));
           parse_str($url['query'], $event);
-          if (isset($query['id'])) {
+          if (isset($event['id'])) {
             // Set subject_id if event id is known.
             $subject_id = $event['id'];
           }
+
+          // Fetch 'event' id from request.
+          if (isset($_REQUEST['event_id'])) {
+            // Set subject_id if event id is known.
+            $subject_id = $_REQUEST['event_id'];
+          }
+
         }
 
         // Check for 'subject_id' & 'is_pay_later' contributions only?
@@ -196,11 +202,9 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
         if (isset($subject_id)) {
 
           // Fetch 'contact_id' parameter.
+          $contact_id = rand(1, 999999);
           if (isset($params['contact_id'])) {
             $contact_id = $params['contact_id'];
-          }
-          else {
-            $contact_id = rand(1, 999999);
           }
 
           // Generate OGM code.
@@ -270,13 +274,16 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
   /* Events & Memberships */
   if (isset($params['valueName']) && isset($_REQUEST['qfKey'])) {
     if ($params['valueName'] == "event_online_receipt" || $params['valueName'] == "membership_online_receipt") {
+      // Fetch qfKey.
+      $qfKey = $_REQUEST['qfKey'];
+
       // Plain text email.
       if (isset($params['text'])) {
-        $params['text'] = ogm_civicrm_replaceTokens($params['text'], $_REQUEST['qfKey']);
+        $params['text'] = ogm_civicrm_replaceTokens($params['text'], $qfKey);
       }
       // HTML text email.
       if (isset($params['html'])) {
-        $params['html'] = ogm_civicrm_replaceTokens($params['html'], $_REQUEST['qfKey']);
+        $params['html'] = ogm_civicrm_replaceTokens($params['html'], $qfKey);
       }
     }
   }
@@ -284,13 +291,16 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
   /* CiviCRM Rules */
   if (isset($params['groupName']) && isset($_REQUEST['qfKey'])) {
     if ($params['groupName'] == 'E-mail from API') {
+      // Fetch qfKey.
+      $qfKey = $_REQUEST['qfKey'];
+
       // Plain text email.
       if (isset($params['text'])) {
-        $params['text'] = ogm_civicrm_replaceTokens($params['text'], $_REQUEST['qfKey']);
+        $params['text'] = ogm_civicrm_replaceTokens($params['text'], $qfKey);
       }
       // HTML text email.
       if (isset($params['html'])) {
-        $params['html'] = ogm_civicrm_replaceTokens($params['html'], $_REQUEST['qfKey']);
+        $params['html'] = ogm_civicrm_replaceTokens($params['html'], $qfKey);
       }
     }
   }
