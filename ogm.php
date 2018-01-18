@@ -126,22 +126,6 @@ function ogm_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 /**
- * Implements hook_civicrm_buildForm().
- *
- * @param $formName
- * @param $form
- */
-function ogm_civicrm_buildForm($formName, &$form) {
-  /*
-  // Development purpose.
-  // unset($_SESSION['ctrl']);
-  if (strpos($formName, 'CRM_Contribute_Form_Contribution_') !== FALSE || strpos($formName, 'CRM_Event_Form_Registration_') !== FALSE) {
-    dpm($_SESSION);
-  }
-  */
-}
-
-/**
  * Implements hook_civicrm_pre().
  *
  * @param $op
@@ -150,37 +134,30 @@ function ogm_civicrm_buildForm($formName, &$form) {
  * @param $params
  */
 function ogm_civicrm_pre($op, $objectName, $id, &$params) {
-
   // Custom hook: Save OGM as source with the contribution.
   if ($objectName == "Contribution") {
     if ($op == "create") {
-
       // Alter 'is_pay_later' contributions.
       if ($params['is_pay_later']) {
-
         // Alter all 'membership' payments.
         if (isset($params['financial_type_id']) && $params['financial_type_id'] == 2) {
           // Set contribution type.
           $contribution_type = ts('Membership');
-
           // Fetch 'contribution page' id from parameters.
           if (isset($params['contribution_page_id'])) {
             // Set subject_id if contribution page is known.
             $subject_id = $params['contribution_page_id'];
           }
-
           // Fetch 'membership' id from parameters.
           if (isset($params['membership_id'])) {
             // Set subject_id if membership id is known.
             $subject_id = $params['membership_id'];
           }
         }
-
         // Alter all 'event' payments.
         if (isset($params['financial_type_id']) && $params['financial_type_id'] == 4) {
           // Set contribution type.
           $contribution_type = ts('Event');
-
           // Fetch 'event' id from 'entryURL'.
           $url = parse_url(htmlspecialchars_decode($_REQUEST['entryURL']));
           parse_str($url['query'], $event);
@@ -188,46 +165,35 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
             // Set subject_id if event id is known.
             $subject_id = $event['id'];
           }
-
           // Fetch 'event' id from request.
           if (isset($_REQUEST['event_id'])) {
             // Set subject_id if event id is known.
             $subject_id = $_REQUEST['event_id'];
           }
-
         }
-
         // Check for 'subject_id' & 'is_pay_later' contributions only?
         // If subject_id is set create OGM & Session.
         if (isset($subject_id)) {
-
           // Fetch 'contact_id' parameter.
           $contact_id = rand(1, 999999);
           if (isset($params['contact_id'])) {
             $contact_id = $params['contact_id'];
           }
-
           // Generate OGM code.
           $ogm = ogm_civicrm_createOGM($contact_id, $subject_id);
-
           // Add OGM code to contribution
           $params['source'] = $ogm;
           $params['trxn_id'] = $ogm;
-
           // Fetch qfKey.
           $qfKey = $_REQUEST['qfKey'];
-
           // Create Session variables.
           $_SESSION['ctrl'][$qfKey]['contribution_ogm'] = $ogm;
           $_SESSION['ctrl'][$qfKey]['contribution_amount'] = CRM_Utils_Money::format($params['total_amount'], $params['currency']);
           $_SESSION['ctrl'][$qfKey]['contribution_type'] = $contribution_type;
-
         }
-
       }
     }
   }
-
 }
 
 /**
@@ -242,7 +208,6 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
 function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
   // Change tokens in forms.
   if ($context == "form" && isset($_REQUEST['qfKey'])) {
-
     // Replace Tokens.
     if ($tplName == "CRM/Event/Form/Registration/Confirm.tpl"
       || $tplName == "CRM/Event/Form/Registration/ThankYou.tpl"
@@ -251,7 +216,6 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
       // Find & Replace token
       $content = ogm_civicrm_replaceTokens($content, $_REQUEST['qfKey']);
     }
-
     // Unset session by qfKey.
     if ($tplName == "CRM/Event/Form/Registration/ThankYou.tpl" || $tplName == "CRM/Contribute/Form/Contribution/ThankYou.tpl") {
       // Fetch qfKey.
@@ -270,13 +234,11 @@ function ogm_civicrm_alterContent(&$content, $context, $tplName, &$object) {
  */
 function ogm_civicrm_alterMailParams(&$params, $context) {
   // Change tokens in "html" & "text" mailing formats.
-
   /* Events & Memberships */
   if (isset($params['valueName']) && isset($_REQUEST['qfKey'])) {
     if ($params['valueName'] == "event_online_receipt" || $params['valueName'] == "membership_online_receipt") {
       // Fetch qfKey.
       $qfKey = $_REQUEST['qfKey'];
-
       // Plain text email.
       if (isset($params['text'])) {
         $params['text'] = ogm_civicrm_replaceTokens($params['text'], $qfKey);
@@ -287,13 +249,11 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
       }
     }
   }
-
   /* CiviCRM Rules */
   if (isset($params['groupName']) && isset($_REQUEST['qfKey'])) {
     if ($params['groupName'] == 'E-mail from API') {
       // Fetch qfKey.
       $qfKey = $_REQUEST['qfKey'];
-
       // Plain text email.
       if (isset($params['text'])) {
         $params['text'] = ogm_civicrm_replaceTokens($params['text'], $qfKey);
@@ -304,5 +264,4 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
       }
     }
   }
-
 }
