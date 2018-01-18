@@ -25,7 +25,24 @@ OGM: Add "gestructureerde mededeling" for CiviCRM contributions
 
 ## Usage
 
-- You can use following tokens with 'events' & 'memberships':
+- You can use tokens below for the following:
+    - Pay later instructions
+    - Event & membership transactional mails
+    - CiviRules trigger contribution (pending), Action 'Send Email'
+    
+- You can use following tokens:
     - [contribution.ogm]
     - [contribution.amount]
     - [contribution.type]
+
+## Versions
+
+### v1.0 
+
+    - Adds tokens for CiviCRM contribution and event pages.
+
+### v2.0 
+
+    - Complete rework from v1.0
+    - Multiple registration(s) possible at once
+    - CiviRules integration
