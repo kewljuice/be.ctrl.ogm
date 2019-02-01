@@ -1,0 +1,8 @@
+{
+  "name": "kewljuice/be.ctrl.ogm",
+  "description": "CiviCRM ogm extension",
+  "type": "civicrm-extension",
+  "keywords": [
+    "CiviCRM"
+  ]
+}
