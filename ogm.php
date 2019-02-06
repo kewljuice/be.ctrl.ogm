@@ -139,6 +139,16 @@ function ogm_civicrm_pre($op, $objectName, $id, &$params) {
     if ($op == "create") {
       // Alter 'is_pay_later' contributions.
       if ($params['is_pay_later']) {
+        // Alter all 'donation' payments.
+        if (isset($params['financial_type_id']) && $params['financial_type_id'] == 1) {
+          // Set contribution type.
+          $contribution_type = ts('Donation');
+          // Fetch 'contribution page' id from parameters.
+          if (isset($params['contribution_page_id'])) {
+            // Set subject_id if contribution page is known.
+            $subject_id = $params['contribution_page_id'];
+          }
+        }
         // Alter all 'membership' payments.
         if (isset($params['financial_type_id']) && $params['financial_type_id'] == 2) {
           // Set contribution type.
