@@ -2,6 +2,9 @@
   "name": "kewljuice/be.ctrl.ogm",
   "description": "CiviCRM ogm extension",
   "type": "civicrm-extension",
+  "require": {
+    "composer/installers": "~1.0"
+  },
   "keywords": [
     "CiviCRM"
   ]
