@@ -261,7 +261,7 @@ function ogm_civicrm_alterMailParams(&$params, $context) {
   }
   /* CiviCRM Rules */
   if (isset($params['groupName']) && isset($_REQUEST['qfKey'])) {
-    if ($params['groupName'] == 'E-mail from API') {
+    if ($params['groupName'] == 'E-mail from API' || $params['groupName'] == 'Email from API') {
       // Fetch qfKey.
       $qfKey = $_REQUEST['qfKey'];
       // Plain text email.
